@@ -152,7 +152,7 @@ const Controls_Widget = widgets.Controls_Widget =
                 scene.control_panel = control_panel;
                 scene.timestamp = time;
                 // Draw each registered animation:
-                scene.make_control_panel();
+                // scene.make_control_panel();
             }
         }
 
@@ -164,7 +164,7 @@ const Controls_Widget = widgets.Controls_Widget =
                 open_list.push(...open_list[0].children);
                 const scene = open_list.shift();
                 if (!scene.timestamp || scene.timestamp > this.timestamp) {
-                    this.make_panels(time);
+                    // this.make_panels(time);
                     break;
                 }
 
@@ -246,12 +246,12 @@ const Code_Widget = widgets.Code_Widget =
             if (!main_scene)
                 return;
 
-            import( './main-scene.js' )
-                .then(module => {
-                    this.build_reader(element, main_scene, additional_scenes, module.defs);
-                    if (!options.hide_navigator)
-                        this.build_navigator(element, main_scene, additional_scenes, module.defs);
-                })
+            // import( './main-scene.js' )
+            //     .then(module => {
+            //         this.build_reader(element, main_scene, additional_scenes, module.defs);
+            //         if (!options.hide_navigator)
+            //             this.build_navigator(element, main_scene, additional_scenes, module.defs);
+            //     })
         }
 
         build_reader(element, main_scene, additional_scenes, definitions) {
