@@ -15,7 +15,7 @@ export class Assignment extends Scene {
 
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
-            // torus: new defs.Torus(15, 15),
+            torus: new defs.Torus(15, 15),
             // torus2: new defs.Torus(3, 15),
             // sphere: new defs.Subdivision_Sphere(4),
             // circle: new defs.Regular_2D_Polygon(1, 15),
@@ -24,8 +24,8 @@ export class Assignment extends Scene {
 
         // *** Materials
         this.materials = {
-            // test: new Material(new defs.Phong_Shader(),
-            //     {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
+            test: new Material(new defs.Phong_Shader(),
+                {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
             // test2: new Material(new Gouraud_Shader(),
             //     {ambient: .4, diffusivity: .6, color: hex_color("#992828")}),
             // ring: new Material(new Ring_Shader()),
@@ -90,6 +90,8 @@ export class Assignment extends Scene {
 
 
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+        const yellow = hex_color("#fac91a");
+        let model_transform = Mat4.identity();
 
         // how many times we want the objects to fall
         const x_offset = 7.5
