@@ -15,23 +15,22 @@ export class Assignment extends Scene {
 
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
-            torus: new defs.Torus(15, 15),
-            torus2: new defs.Torus(3, 15),
-            sphere: new defs.Subdivision_Sphere(4),
-            circle: new defs.Regular_2D_Polygon(1, 15),
-            // TODO:  Fill in as many additional shape instances as needed in this key/value table.
-            //        (Requirement 1)
+            // torus: new defs.Torus(15, 15),
+            // torus2: new defs.Torus(3, 15),
+            // sphere: new defs.Subdivision_Sphere(4),
+            // circle: new defs.Regular_2D_Polygon(1, 15),
+            starship: new defs.Cube(),
         };
 
         // *** Materials
         this.materials = {
-            test: new Material(new defs.Phong_Shader(),
-                {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
-            test2: new Material(new Gouraud_Shader(),
-                {ambient: .4, diffusivity: .6, color: hex_color("#992828")}),
-            ring: new Material(new Ring_Shader()),
-            // TODO:  Fill in as many additional material objects as needed in this key/value table.
-            //        (Requirement 4)
+            // test: new Material(new defs.Phong_Shader(),
+            //     {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
+            // test2: new Material(new Gouraud_Shader(),
+            //     {ambient: .4, diffusivity: .6, color: hex_color("#992828")}),
+            // ring: new Material(new Ring_Shader()),
+            starship: new Material(new defs.Phong_Shader(),
+                {ambient: .5, diffusivity: 1, color: hex_color("#ffffff")}),
         }
 
         this.get_y_offset = (y_offset, i) => {
@@ -47,26 +46,37 @@ export class Assignment extends Scene {
         }
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
+
+        // NEW GLOBAL VARIABLES
+        // Starship variables
+        this.starship_y_coord = -7;                 // starship y-coord from centre
+        this.starship_x_coord = 0;                  // shifted depending on movement controls
+        this.starship_x_movement = 3;               // how much move in x direction every press
     }
 
-    // make_control_panel() {
-    //     // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-    //     this.key_triggered_button("View solar system", ["Control", "0"], () => this.attached = () => null);
-    //     this.new_line();
-    //     this.key_triggered_button("Attach to planet 1", ["Control", "1"], () => this.attached = () => this.planet_1);
-    //     this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
-    //     this.new_line();
-    //     this.key_triggered_button("Attach to planet 3", ["Control", "3"], () => this.attached = () => this.planet_3);
-    //     this.key_triggered_button("Attach to planet 4", ["Control", "4"], () => this.attached = () => this.planet_4);
-    //     this.new_line();
-    //     this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
+    make_control_panel() {
+        // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
+        this.key_triggered_button("Left", ["Control", "a"], () => this.move_left = () => this.starship);
+        this.key_triggered_button("Right", ["Control", "d"], () => this.move_right = () => this.starship);
+        // this.new_line();
+        // this.key_triggered_button("Attach to planets 1", ["Control", "1"], () => this.attached = () => this.planet_1);
+        // this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
+        // this.new_line();
+        // this.key_triggered_button("Attach to planet 3", ["Control", "3"], () => this.attached = () => this.planet_3);
+        // this.key_triggered_button("Attach to planet 4", ["Control", "4"], () => this.attached = () => this.planet_4);
+        // this.new_line();
+        // this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
+    }
+
+    // move_left(starship_transform) {
+    //     console.log("asdf");
     // }
 
     display(context, program_state) {
         // display():  Called once per frame of animation.
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
         if (!context.scratchpad.controls) {
-            // this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
+            this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
             program_state.set_camera(this.initial_camera_location);
         }
@@ -74,18 +84,12 @@ export class Assignment extends Scene {
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, .1, 1000);
 
-        // TODO: Create Planets (Requirement 1)
-        // this.shapes.[XXX].draw([XXX]) // <--example
-
-        // TODO: Lighting (Requirement 2)
         const light_position = vec4(0, 5, 5, 1);
         // The parameters of the Light are: position, color, size
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
 
-        // TODO:  Fill in matrix operations and drawing code to draw the solar system scene (Requirements 3 and 4)
+
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
-        const yellow = hex_color("#fac91a");
-        let model_transform = Mat4.identity();
 
         // how many times we want the objects to fall
         const x_offset = 7.5
@@ -105,8 +109,49 @@ export class Assignment extends Scene {
             this.shapes.torus.draw(context, program_state, model_transform_block_middle, this.materials.test.override({color: yellow}));
             this.shapes.torus.draw(context, program_state, model_transform_block_right, this.materials.test.override({color: yellow}));
         }
+
+
+        // *******************************
+        // ********** NEW STUFF **********
+        // *******************************
+
+        // Variables
+
+        // Starship Movement Controls
+        if(this.move_left) {
+            console.log("running move_left");
+            this.move_left = !this.move_left;
+            this.starship_x_coord -= this.starship_x_movement;
+        }
+        if(this.move_right) {
+            console.log("running move_right");
+            this.move_right = !this.move_right;
+            this.starship_x_coord += this.starship_x_movement;
+            // starship_transform = starship_transform.times(Mat4.translation(-3,0,0));
+        }
+
+        // ***** DRAW STARSHIP *****
+        let starship_transform = Mat4.identity();
+        // move starship to correct y-coord and scale to make it a rectangle
+        starship_transform = starship_transform.times(Mat4.translation(this.starship_x_coord,this.starship_y_coord,0))
+                                                .times(Mat4.scale(1.2,1,1.5));     
+        
+
+        this.shapes.starship.draw(context, program_state, starship_transform, this.materials.starship);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 class Gouraud_Shader extends Shader {
     // This is a Shader using Phong_Shader as template
