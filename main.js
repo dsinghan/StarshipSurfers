@@ -9,6 +9,10 @@ export class Assignment extends Scene {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
         super();
 
+        this.num_iterations = 997;
+
+        this.rand_values = Array.from({length: this.num_iterations}, () => (Math.random(1)) + 1);
+
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
             torus: new defs.Torus(15, 15),
@@ -28,6 +32,18 @@ export class Assignment extends Scene {
             ring: new Material(new Ring_Shader()),
             // TODO:  Fill in as many additional material objects as needed in this key/value table.
             //        (Requirement 4)
+        }
+
+        this.get_y_offset = (y_offset, i) => {
+            return y_offset * i;
+        }
+
+        this.get_z_offset = (z_offset, i) => {
+            return z_offset * (i-1);
+        }
+
+        this.get_object_speed = (fall_constant, t, i, mul) => {
+            return t * fall_constant * this.rand_values[this.num_iterations % (i*mul)];
         }
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
@@ -71,7 +87,24 @@ export class Assignment extends Scene {
         const yellow = hex_color("#fac91a");
         let model_transform = Mat4.identity();
 
-        this.shapes.torus.draw(context, program_state, model_transform, this.materials.test.override({color: yellow}));
+        // how many times we want the objects to fall
+        const x_offset = 7.5
+        const y_offset = 10
+        const y_fall = 2;
+        const z_fall = 1;
+        const z_offset = -5;
+
+        for (let i = 1; i < this.num_iterations/3; i++) {
+            let rand_val_1 = this.rand_values[this.num_iterations % (i*1)]
+            let rand_val_2 = this.rand_values[this.num_iterations % (i*2)]
+            let rand_val_3 = this.rand_values[this.num_iterations % (i*3)]
+            let model_transform_block_left = model_transform.times(Mat4.translation(-x_offset, y_offset * i * rand_val_1 - y_fall * t * rand_val_1, z_offset * (i-1) * rand_val_1 +z_fall * t * rand_val_1));
+            let model_transform_block_middle = model_transform.times(Mat4.translation(0, y_offset * i * rand_val_2 - y_fall * t * rand_val_2, z_offset * (i-1) * rand_val_2 + z_fall * t * rand_val_2));
+            let model_transform_block_right = model_transform.times(Mat4.translation(x_offset, y_offset * i * rand_val_3 - y_fall * t * rand_val_3, z_offset * (i-1) * rand_val_3 + z_fall * t * rand_val_3));
+            this.shapes.torus.draw(context, program_state, model_transform_block_left, this.materials.test.override({color: yellow}));
+            this.shapes.torus.draw(context, program_state, model_transform_block_middle, this.materials.test.override({color: yellow}));
+            this.shapes.torus.draw(context, program_state, model_transform_block_right, this.materials.test.override({color: yellow}));
+        }
     }
 }
 
