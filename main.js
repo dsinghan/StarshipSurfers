@@ -118,7 +118,6 @@ export class Assignment extends Scene {
             console.log("running move_right");
             this.move_right = !this.move_right;
             this.starship_x_coord += this.starship_x_movement;
-            // starship_transform = starship_transform.times(Mat4.translation(-3,0,0));
         }
 
         // ***** DRAW STARSHIP *****
@@ -127,14 +126,12 @@ export class Assignment extends Scene {
         starship_transform = starship_transform.times(Mat4.translation(this.starship_x_coord,this.starship_y_coord,0))
                                                 .times(Mat4.scale(1.2,1,1.5));     
         
-
         this.shapes.starship.draw(context, program_state, starship_transform, this.materials.starship);
 
+
+        // ***** DRAW BACKGROUND *****
         let background_transform = Mat4.identity();
         background_transform = background_transform.times(Mat4.scale(10, 5, 1));
-
-
-
 
         this.shapes.background.draw(context, program_state, background_transform, this.materials.texture);
         
