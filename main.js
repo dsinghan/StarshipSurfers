@@ -1,8 +1,10 @@
 import {defs, tiny} from './examples/common.js';
 
 const {
-    Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
+    Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture
 } = tiny;
+
+const {Textured_Phong} = defs;
 
 export class Assignment extends Scene {
     constructor() {
@@ -29,8 +31,13 @@ export class Assignment extends Scene {
             // test2: new Material(new Gouraud_Shader(),
             //     {ambient: .4, diffusivity: .6, color: hex_color("#992828")}),
             // ring: new Material(new Ring_Shader()),
-            starship: new Material(new defs.Phong_Shader(),
-                {ambient: .5, diffusivity: 1, color: hex_color("#ffffff")}),
+            starship: new Material(new Textured_Phong(),
+                {ambient: .5, 
+                 diffusivity: .1,
+                 specularity: .1,
+                 color: hex_color("#ffffff"),
+                 texture: new Texture("assets/stars.png")
+                }),
         }
 
         this.get_y_offset = (y_offset, i) => {
