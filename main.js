@@ -13,7 +13,7 @@ export class Assignment extends Scene {
 
         this.num_iterations = 997;
 
-        this.rand_values = Array.from({length: this.num_iterations}, () => (Math.random(1)) + 1);
+        this.rand_values = Array.from({length: this.num_iterations}, () => (Math.floor(Math.random() * 3)));
 
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
@@ -54,30 +54,71 @@ export class Assignment extends Scene {
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
 
+        this.x_offset = 0
+        this.y_offset = -6
+        this.z_offset = -20;
+        this.z_fall = 100;
+
         // NEW GLOBAL VARIABLES
         // Starship variables
         this.starship_y_coord = -7;                 // starship y-coord from centre
         this.starship_x_coord = 0;                  // shifted depending on movement controls
         this.starship_x_movement = 3;               // how much move in x direction every press
+        this.starship_z_coord = 0;
+        this.obstacle_coord = [0];
+        // set up arrays for obstacle collision and placement
+        // theres one array for the actual 
+        for (let i = 1; i < 901; i++) {
+            this.obstacle_coord.push([this.x_offset, this.y_offset, this.z_offset*i]);
+        }
+        this.obstacle_collision_coord = [0];
+        for (let i = 1; i < 901; i++) {
+            this.obstacle_collision_coord.push([this.x_offset, this.y_offset, this.z_offset*i]);
+        }
+        this.random_x_assignment = [0];
+        for (let i = 1; i < 901; i++) {
+            let rand = Math.floor(Math.random() * 5)
+            let x_coord;
+            if (rand === 0) {
+                x_coord = 0;
+            } else if (rand === 1) {
+                x_coord = -7;
+            } else if (rand === 2) {
+                x_coord = 7;
+            } else if (rand === 3) {
+                x_coord = -3.5;
+            } else {
+                x_coord = 3.5;
+            }
+            this.obstacle_coord[i][0] = x_coord;
+            this.obstacle_collision_coord[i][0] = x_coord;
+        }
+    }
+
+    touched(obstacle_coord, starship_coord) {
+        let obs_x = obstacle_coord[0];
+        let obs_y = obstacle_coord[1];
+        let obs_z = obstacle_coord[2];
+        let star_x = starship_coord[0];
+        let star_y = starship_coord[1];
+        let star_z = starship_coord[2];
+        let threshhold = 2
+        let z_threshhold_lower = 5
+        let z_threshhold_upper = 1
+        if ((star_x - threshhold <= obs_x && obs_x <= star_x + threshhold) && 
+            (star_y - threshhold <= obs_y && obs_y <= star_y + threshhold) && 
+            (star_z - z_threshhold_upper <= obs_z && obs_z <= star_z + z_threshhold_lower)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         this.key_triggered_button("Left", ["Control", "a"], () => this.move_left = () => this.starship);
         this.key_triggered_button("Right", ["Control", "d"], () => this.move_right = () => this.starship);
-        // this.new_line();
-        // this.key_triggered_button("Attach to planets 1", ["Control", "1"], () => this.attached = () => this.planet_1);
-        // this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
-        // this.new_line();
-        // this.key_triggered_button("Attach to planet 3", ["Control", "3"], () => this.attached = () => this.planet_3);
-        // this.key_triggered_button("Attach to planet 4", ["Control", "4"], () => this.attached = () => this.planet_4);
-        // this.new_line();
-        // this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
     }
-
-    // move_left(starship_transform) {
-    //     console.log("asdf");
-    // }
 
     display(context, program_state) {
         // display():  Called once per frame of animation.
@@ -100,26 +141,6 @@ export class Assignment extends Scene {
         const yellow = hex_color("#fac91a");
         let model_transform = Mat4.identity();
 
-        // how many times we want the objects to fall
-        const x_offset = 7.5
-        const y_offset = 10
-        const y_fall = 2;
-        const z_fall = 1;
-        const z_offset = -5;
-
-        for (let i = 1; i < this.num_iterations/3; i++) {
-            let rand_val_1 = this.rand_values[this.num_iterations % (i*1)]
-            let rand_val_2 = this.rand_values[this.num_iterations % (i*2)]
-            let rand_val_3 = this.rand_values[this.num_iterations % (i*3)]
-            let model_transform_block_left = model_transform.times(Mat4.translation(-x_offset, y_offset * i * rand_val_1 - y_fall * t * rand_val_1, z_offset * (i-1) * rand_val_1 +z_fall * t * rand_val_1));
-            let model_transform_block_middle = model_transform.times(Mat4.translation(0, y_offset * i * rand_val_2 - y_fall * t * rand_val_2, z_offset * (i-1) * rand_val_2 + z_fall * t * rand_val_2));
-            let model_transform_block_right = model_transform.times(Mat4.translation(x_offset, y_offset * i * rand_val_3 - y_fall * t * rand_val_3, z_offset * (i-1) * rand_val_3 + z_fall * t * rand_val_3));
-            this.shapes.torus.draw(context, program_state, model_transform_block_left, this.materials.test.override({color: yellow}));
-            this.shapes.torus.draw(context, program_state, model_transform_block_middle, this.materials.test.override({color: yellow}));
-            this.shapes.torus.draw(context, program_state, model_transform_block_right, this.materials.test.override({color: yellow}));
-        }
-
-
         // *******************************
         // ********** NEW STUFF **********
         // *******************************
@@ -128,12 +149,10 @@ export class Assignment extends Scene {
 
         // Starship Movement Controls
         if(this.move_left) {
-            console.log("running move_left");
             this.move_left = !this.move_left;
             this.starship_x_coord -= this.starship_x_movement;
         }
         if(this.move_right) {
-            console.log("running move_right");
             this.move_right = !this.move_right;
             this.starship_x_coord += this.starship_x_movement;
             // starship_transform = starship_transform.times(Mat4.translation(-3,0,0));
@@ -142,25 +161,21 @@ export class Assignment extends Scene {
         // ***** DRAW STARSHIP *****
         let starship_transform = Mat4.identity();
         // move starship to correct y-coord and scale to make it a rectangle
-        starship_transform = starship_transform.times(Mat4.translation(this.starship_x_coord,this.starship_y_coord,0))
-                                                .times(Mat4.scale(1.2,1,1.5));     
+        starship_transform = starship_transform.times(Mat4.translation(this.starship_x_coord,this.starship_y_coord, 2))
+                                                .times(Mat4.scale(1.2,1,3));
         
-
         this.shapes.starship.draw(context, program_state, starship_transform, this.materials.starship);
+
+        for (let i = 1; i < 901; i++) {
+            this.shapes.torus.draw(context, program_state, model_transform.times(Mat4.translation(this.obstacle_coord[i][0], this.obstacle_coord[i][1], this.obstacle_coord[i][2] + this.z_fall * t)), this.materials.test.override({color: yellow}));
+            this.obstacle_collision_coord[i] = [this.obstacle_collision_coord[i][0], this.obstacle_collision_coord[i][1], this.z_offset * i + this.z_fall * t];
+            if (this.touched(this.obstacle_collision_coord[i], [this.starship_x_coord, this.starship_y_coord, this.starship_z_coord])) {
+                // put your collision function here
+                this.shapes.starship.draw(context, program_state, starship_transform.times(Mat4.translation(0, 0, -5)), this.materials.starship);
+            }
+        }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 class Gouraud_Shader extends Shader {
     // This is a Shader using Phong_Shader as template
