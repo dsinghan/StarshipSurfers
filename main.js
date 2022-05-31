@@ -31,6 +31,11 @@ export class Assignment extends Scene {
             texture: new Material(new Textured_Phong(), {
                 color: hex_color("#ffffff"),
                 ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
+                texture: new Texture("assets/royce.jpg")
+            }),
+            texture_ground: new Material(new Textured_Phong(), {
+                color: hex_color("#ffffff"),
+                ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
                 texture: new Texture("assets/stars.png")
             }),
         }
@@ -53,7 +58,7 @@ export class Assignment extends Scene {
         // Starship variables
         this.starship_y_coord = -7;                 // starship y-coord from centre
         this.starship_x_coord = 0;                  // shifted depending on movement controls
-        this.starship_x_movement = 3;               // how much move in x direction every press
+        this.starship_x_movement = 10;               // how much move in x direction every press
     }
 
     make_control_panel() {
@@ -131,9 +136,18 @@ export class Assignment extends Scene {
 
         // ***** DRAW BACKGROUND *****
         let background_transform = Mat4.identity();
-        background_transform = background_transform.times(Mat4.scale(10, 5, 1));
+        background_transform = background_transform.times(Mat4.rotation(-Math.PI*(1/7), 1, 0, 0))
+                                                    .times(Mat4.translation(0, 0, -5))
+                                                    .times(Mat4.scale(22, 12, 1));
 
         this.shapes.background.draw(context, program_state, background_transform, this.materials.texture);
+
+        // ***** DRAW GROUND *****
+        // let ground_transform = Mat4.identity();
+        // ground_transform = ground_transform.times(Mat4.rotation(-Math.PI*(4/9), 1, 0, 0))
+        //                                     .times(Mat4.translation(0, -5, -10))
+        //                                     .times(Mat4.scale(20, 15, 1));
+        // this.shapes.background.draw(context, program_state, ground_transform, this.materials.texture_ground)
         
     }
 }
