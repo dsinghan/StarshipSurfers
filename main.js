@@ -26,9 +26,6 @@ export class Assignment extends Scene {
         this.materials = {
             test: new Material(new defs.Phong_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
-            // test2: new Material(new Gouraud_Shader(),
-            //     {ambient: .4, diffusivity: .6, color: hex_color("#992828")}),
-            // ring: new Material(new Ring_Shader()),
             starship: new Material(new Textured_Phong(),
                 {ambient: .5, 
                  diffusivity: .1,
@@ -40,11 +37,6 @@ export class Assignment extends Scene {
                 color: hex_color("#ffffff"),
                 ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
                 texture: new Texture("assets/royce.jpg")
-            }),
-            texture_ground: new Material(new Textured_Phong(), {
-                color: hex_color("#ffffff"),
-                ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/stars.png")
             }),
         }
 
@@ -65,13 +57,13 @@ export class Assignment extends Scene {
         this.x_offset = 0
         this.y_offset = -6
         this.z_offset = -20;
-        this.z_fall = 100;
+        this.z_fall = 10;
 
         // NEW GLOBAL VARIABLES
         // Starship variables
         this.starship_y_coord = -7;                 // starship y-coord from centre
         this.starship_x_coord = 0;                  // shifted depending on movement controls
-        this.starship_x_movement = 3;               // how much move in x direction every press
+        this.starship_x_movement = 10;               // how much move in x direction every press
         this.starship_z_coord = 0;
         this.obstacle_coord = [0];
         // set up arrays for obstacle collision and placement
@@ -90,13 +82,13 @@ export class Assignment extends Scene {
             if (rand === 0) {
                 x_coord = 0;
             } else if (rand === 1) {
-                x_coord = -7;
+                x_coord = -10;
             } else if (rand === 2) {
-                x_coord = 7;
+                x_coord = 10;
             } else if (rand === 3) {
-                x_coord = -3.5;
+                x_coord = -5;
             } else {
-                x_coord = 3.5;
+                x_coord = 5;
             }
             this.obstacle_coord[i][0] = x_coord;
             this.obstacle_collision_coord[i][0] = x_coord;
