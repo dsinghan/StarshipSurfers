@@ -107,6 +107,8 @@ export class Assignment extends Scene {
         this.starship_x_movement = 5;               // how much move in x direction every press
         this.starship_z_coord = 0;
         this.obstacle_coord = [0];
+
+
         // set up arrays for obstacle collision and placement
         // theres one array for the actual 
         for (let i = 1; i < 901; i++) {
@@ -160,10 +162,6 @@ export class Assignment extends Scene {
         this.key_triggered_button("Left", ["Control", "a"], () => this.move_left = () => this.starship);
         this.key_triggered_button("Right", ["Control", "d"], () => this.move_right = () => this.starship);
     }
-
-    // move_left(starship_transform) {
-    //     console.log("asdf");
-    // }
 
     draw_starship(context, program_state) {
         // ***** DRAW STARSHIP *****
@@ -225,31 +223,13 @@ export class Assignment extends Scene {
         this.shapes.starship.draw(context, program_state, lid_transform, this.materials.test.override({color: hex_color("#000000")}));
     }
 
-    display(context, program_state) {
-        // display():  Called once per frame of animation.
-        // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
-        if (!context.scratchpad.controls) {
-            this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
-            // Define the global camera and projection matrices, which are stored in program_state.
-            program_state.set_camera(this.initial_camera_location);
-        }
-
-        program_state.projection_transform = Mat4.perspective(
-            Math.PI / 4, context.width / context.height, .1, 1000);
-
-        const light_position = vec4(0, 5, 5, 1);
-        // The parameters of the Light are: position, color, size
-        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+    
+    render_scene(context, program_state, shadow_pass, draw_light_source=false, draw_shadow=false) {
+        // shadow_pass: true if this is the second pass that draw the shadow.
+        // draw_light_source: true if we want to draw the light source.
+        // draw_shadow: true if we want to draw the shadow
 
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
-        const yellow = hex_color("#fac91a");
-        let model_transform = Mat4.identity();
-
-        // *******************************
-        // ********** NEW STUFF **********
-        // *******************************
-
-        // Variables
 
         // Starship Movement Controls
             // only want to be able to move one unit from centre in each direction
@@ -277,6 +257,9 @@ export class Assignment extends Scene {
 
         this.shapes.background.draw(context, program_state, background_transform, this.materials.texture);
 
+        const yellow = hex_color("#fac91a");
+        let model_transform = Mat4.identity();
+
         for (let i = 1; i < 901; i++) {
             this.shapes.torus.draw(context, program_state, model_transform.times(Mat4.translation(this.obstacle_coord[i][0], this.obstacle_coord[i][1], this.obstacle_coord[i][2] + this.z_fall * t)), this.materials.test.override({color: yellow}));
             this.obstacle_collision_coord[i] = [this.obstacle_collision_coord[i][0], this.obstacle_collision_coord[i][1], this.z_offset * i + this.z_fall * t];
@@ -289,5 +272,28 @@ export class Assignment extends Scene {
                 this.shapes.starship.draw(context, program_state, starship_transform.times(Mat4.translation(0, 0, -5)), this.materials.starship);
             }
         }
+    }
+
+
+    display(context, program_state) {
+        // display():  Called once per frame of animation.
+        // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
+        if (!context.scratchpad.controls) {
+            this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
+            // Define the global camera and projection matrices, which are stored in program_state.
+            program_state.set_camera(this.initial_camera_location);
+        }
+
+        program_state.projection_transform = Mat4.perspective(
+            Math.PI / 4, context.width / context.height, .1, 1000);
+
+        const light_position = vec4(0, 5, 5, 1);
+        // The parameters of the Light are: position, color, size
+        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+
+
+
+
+        this.render_scene(context, program_state, false, false, false);
     }
 }
