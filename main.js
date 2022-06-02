@@ -107,6 +107,14 @@ export class Assignment extends Scene {
         this.starship_x_movement = 10;               // how much move in x direction every press
         this.starship_z_coord = 0;
         this.obstacle_coord = [0];
+
+        // Smooth movement variables
+        this.start_pos;
+        this.fin_pos;
+        this.start_time;
+        this.moving_left;
+        this.moving_right
+        
         // set up arrays for obstacle collision and placement
         // theres one array for the actual 
         for (let i = 1; i < 901; i++) {
@@ -252,15 +260,53 @@ export class Assignment extends Scene {
         // Variables
 
         // Starship Movement Controls
-        if(this.move_left) {
-            this.move_left = !this.move_left;
-            this.starship_x_coord -= this.starship_x_movement;
+
+        let smooth_move_speed = 0.25;
+
+        if(this.moving_left){
+            let time_diff = t - this.start_time;
+            if (time_diff > smooth_move_speed) {
+                this.starship_x_coord = this.start_pos - this.starship_x_movement;
+                this.moving_left = false;
+            }
+            else if (this.starship_x_coord <= this.fin_pos) {
+                this.moving_left = false;
+                this.starship_x_coord = this.start_pos - this.starship_x_movement;
+            }
+            else {
+                this.starship_x_coord = this.start_pos - time_diff * this.starship_x_movement / smooth_move_speed;
+            }
         }
-        if(this.move_right) {
-            this.move_right = !this.move_right;
-            this.starship_x_coord += this.starship_x_movement;
-            // starship_transform = starship_transform.times(Mat4.translation(-3,0,0));
-        }        
+        else if(this.moving_right){
+            let time_diff = t - this.start_time;
+            if (time_diff > smooth_move_speed) {
+                this.starship_x_coord = this.start_pos + this.starship_x_movement;
+                this.moving_right = false;
+            }
+            else if (this.starship_x_coord >= this.fin_pos) {
+                this.moving_right = false;
+                this.starship_x_coord = this.start_pos + this.starship_x_movement;
+            }
+            else {
+                this.starship_x_coord = this.start_pos + time_diff * this.starship_x_movement / smooth_move_speed;
+            }
+        }
+        else {
+            if(this.move_left) {
+                this.move_left = false;
+                this.moving_left = true;
+                this.start_time = t;
+                this.start_pos = this.starship_x_coord;
+                this.fin_pos = this.starship_x_coord - this.starship_x_movement;
+            }
+            if(this.move_right) {
+                this.move_right = false;
+                this.moving_right = true;
+                this.start_time = t;
+                this.start_pos = this.starship_x_coord;
+                this.fin_pos = this.starship_x_coord + this.starship_x_movement;
+            } 
+        }
         
         this.draw_starship(context, program_state);
 
