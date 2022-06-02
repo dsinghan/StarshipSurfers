@@ -252,13 +252,18 @@ export class Assignment extends Scene {
         // Variables
 
         // Starship Movement Controls
+            // only want to be able to move one unit from centre in each direction
         if(this.move_left) {
             this.move_left = !this.move_left;
-            this.starship_x_coord -= this.starship_x_movement;
+            if(this.starship_x_coord >= 0) {
+                this.starship_x_coord -= this.starship_x_movement;
+            }
         }
-        if(this.move_right) {
+        if(this.move_right ) {
             this.move_right = !this.move_right;
-            this.starship_x_coord += this.starship_x_movement;
+            if (this.starship_x_coord <= 0) {
+                this.starship_x_coord += this.starship_x_movement;
+            }
             // starship_transform = starship_transform.times(Mat4.translation(-3,0,0));
         }        
         
