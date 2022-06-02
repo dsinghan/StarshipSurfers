@@ -104,7 +104,7 @@ export class Assignment extends Scene {
         // Starship variables
         this.starship_y_coord = -7;                 // starship y-coord from centre
         this.starship_x_coord = 0;                  // shifted depending on movement controls
-        this.starship_x_movement = 10;               // how much move in x direction every press
+        this.starship_x_movement = 5;               // how much move in x direction every press
         this.starship_z_coord = 0;
         this.obstacle_coord = [0];
         // set up arrays for obstacle collision and placement
@@ -252,13 +252,18 @@ export class Assignment extends Scene {
         // Variables
 
         // Starship Movement Controls
+            // only want to be able to move one unit from centre in each direction
         if(this.move_left) {
             this.move_left = !this.move_left;
-            this.starship_x_coord -= this.starship_x_movement;
+            if(this.starship_x_coord >= -this.starship_x_movement) {
+                this.starship_x_coord -= this.starship_x_movement;
+            }
         }
-        if(this.move_right) {
+        if(this.move_right ) {
             this.move_right = !this.move_right;
-            this.starship_x_coord += this.starship_x_movement;
+            if (this.starship_x_coord <= this.starship_x_movement) {
+                this.starship_x_coord += this.starship_x_movement;
+            }
             // starship_transform = starship_transform.times(Mat4.translation(-3,0,0));
         }        
         
