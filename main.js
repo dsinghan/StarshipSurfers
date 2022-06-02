@@ -263,20 +263,6 @@ export class Assignment extends Scene {
         }        
         
         this.draw_starship(context, program_state);
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
 
         // ***** DRAW BACKGROUND *****
         let background_transform = Mat4.identity();
@@ -291,6 +277,10 @@ export class Assignment extends Scene {
             this.obstacle_collision_coord[i] = [this.obstacle_collision_coord[i][0], this.obstacle_collision_coord[i][1], this.z_offset * i + this.z_fall * t];
             if (this.touched(this.obstacle_collision_coord[i], [this.starship_x_coord, this.starship_y_coord, this.starship_z_coord])) {
                 // put your collision function here
+                let starship_transform = Mat4.identity();
+                // move starship to correct y-coord and scale to make it a rectangle
+                starship_transform = starship_transform.times(Mat4.translation(this.starship_x_coord,this.starship_y_coord,0))
+                                                        .times(Mat4.scale(1.2,1,1.5));  
                 this.shapes.starship.draw(context, program_state, starship_transform.times(Mat4.translation(0, 0, -5)), this.materials.starship);
             }
         }
