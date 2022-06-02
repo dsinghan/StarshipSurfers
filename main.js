@@ -4,7 +4,7 @@ const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture
 } = tiny;
 
-const {Textured_Phong} = defs;
+const {Textured_Phong, Phong_Shader} = defs;
 
 export class Assignment extends Scene {
     constructor() {
@@ -22,6 +22,10 @@ export class Assignment extends Scene {
             // sphere: new defs.Subdivision_Sphere(4),
             // circle: new defs.Regular_2D_Polygon(1, 15),
             starship: new defs.Cube(),
+            starship_wheel: new defs.Torus(4, 15),
+            axel: new defs.Capped_Cylinder(100, 20),
+            flag: new defs.Rounded_Closed_Cone(10, 10),
+
         };
 
         // *** Materials
@@ -31,13 +35,46 @@ export class Assignment extends Scene {
             // test2: new Material(new Gouraud_Shader(),
             //     {ambient: .4, diffusivity: .6, color: hex_color("#992828")}),
             // ring: new Material(new Ring_Shader()),
-            starship: new Material(new Textured_Phong(),
-                {ambient: .5, 
-                 diffusivity: .1,
-                 specularity: .1,
-                 color: hex_color("#ffffff"),
-                 texture: new Texture("assets/stars.png")
+            starship: new Material(new Phong_Shader(),
+                {
+                    ambient: 0.9, 
+                    diffusivity: .1,
+                    specularity: .1,
+                    color: hex_color("#FFFFFF"),
+                    // texture: new Texture("assets/stars.png")
                 }),
+            wheel: new Material(new Textured_Phong(),
+                {
+                    ambient: .2, 
+                    diffusivity: .1,
+                    specularity: .1,
+                    color: hex_color("#ffffff"),
+                    texture: new Texture("assets/tire_texture.jpg")
+                    // <a href="https://www.vecteezy.com/free-vector/tire-texture">Tire Texture Vectors by Vecteezy</a>
+                }),
+            axel: new Material(new Phong_Shader(),
+               {
+                    ambient: .5, 
+                    diffusivity: .9,
+                    specularity: .8,
+                    color: hex_color("#C0C0C0"),
+               }),
+            flag_pole: new Material(new Phong_Shader(),
+               {
+                    ambient: .5, 
+                    diffusivity: .9,
+                    specularity: .8,
+                    color: hex_color("#AAA9AD"),
+               }),
+            flag: new Material(new Textured_Phong(),
+               {
+                    ambient: 1, 
+                    diffusivity: .1,
+                    specularity: .1,
+                    color: hex_color("#000000"),
+                    texture: new Texture("assets/reflector.jpg", "NEAREST")
+                    // https://intamarket-graphics.co.za/product/t-7500-mvp-series/
+               }),
         }
 
         this.get_y_offset = (y_offset, i) => {
@@ -78,6 +115,66 @@ export class Assignment extends Scene {
     // move_left(starship_transform) {
     //     console.log("asdf");
     // }
+
+    draw_starship(context, program_state) {
+        // ***** DRAW STARSHIP *****
+        let starship_transform = Mat4.identity();
+        // move starship to correct y-coord and scale to make it a rectangle
+        starship_transform = starship_transform.times(Mat4.translation(this.starship_x_coord,this.starship_y_coord,0))
+                                                .times(Mat4.scale(1.2,1,1.5));     
+        this.shapes.starship.draw(context, program_state, starship_transform, this.materials.starship);
+
+        //Logic for drawing wheels
+        let wheel_transform = Mat4.identity();
+        wheel_transform = wheel_transform.times(Mat4.translation(this.starship_x_coord, this.starship_y_coord, 0));
+        wheel_transform = wheel_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0));
+
+        let wheel_y = -0.75;
+        let wheel_x = 1;
+        let wheel_z = 1.5*0.9;
+        let wheel_scale_size = 0.65;
+        
+        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(wheel_x, wheel_y, wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), this.materials.wheel);
+        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(wheel_x, wheel_y, -wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), this.materials.wheel);
+        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(0, wheel_y, wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), this.materials.wheel);
+        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(0, wheel_y, -wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), this.materials.wheel);
+        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(-wheel_x, wheel_y, wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), this.materials.wheel);
+        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(-wheel_x, wheel_y, -wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), this.materials.wheel);
+
+
+        //Logic for drawing wheel axel
+        let axel_transform = Mat4.identity();
+        axel_transform = axel_transform.times(Mat4.translation(this.starship_x_coord, this.starship_y_coord-wheel_z/1.85, 0));
+        axel_transform = axel_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0)); // rotate 90 degrees
+        axel_transform = axel_transform.times(Mat4.scale(0.3, 0.3, 2.8)); // change shape of cylinder to resember thin flag rod
+        this.shapes.axel.draw(context, program_state, axel_transform, this.materials.axel);
+        this.shapes.axel.draw(context, program_state, axel_transform.times(Mat4.translation(wheel_x/0.3, 0, 0)), this.materials.axel);
+        this.shapes.axel.draw(context, program_state, axel_transform.times(Mat4.translation(-wheel_x/0.3, 0, 0)), this.materials.axel);
+
+        // Logic for drawing flag
+        let flag_transform = Mat4.identity();
+        flag_transform = flag_transform.times(Mat4.translation(this.starship_x_coord+1, this.starship_y_coord+3, -1.4));
+        flag_transform = flag_transform.times(Mat4.rotation(Math.PI/2, 1, 0, 0));
+        flag_transform = flag_transform.times(Mat4.scale(0.05, 0.05, 4));
+
+        this.shapes.axel.draw(context, program_state, flag_transform, this.materials.flag_pole);
+
+        let triangle_transform = Mat4.identity();
+        triangle_transform = triangle_transform.times(Mat4.translation(this.starship_x_coord+1, -2, -0.45))
+        triangle_transform = triangle_transform.times(Mat4.scale(0.08, 0.5, 1));
+        this.shapes.flag.draw(context, program_state, triangle_transform, this.materials.flag);
+
+
+        //Logic for other decoration on starship
+        let brakelights_transform = Mat4.identity();
+        brakelights_transform = brakelights_transform.times(Mat4.translation(this.starship_x_coord, this.starship_y_coord+0.5, 1.5)).times(Mat4.scale(0.3, .05, 0.1))
+        this.shapes.starship.draw(context, program_state, brakelights_transform.times(Mat4.translation(-2, 0, 0)), this.materials.test.override({color: hex_color("#FF0000")}));
+        this.shapes.starship.draw(context, program_state, brakelights_transform.times(Mat4.translation(2, 0, 0)), this.materials.test.override({color: hex_color("#FF0000")}));
+
+        let lid_transform = Mat4.identity();
+        lid_transform = lid_transform.times(Mat4.translation(this.starship_x_coord, this.starship_y_coord+0.5, 0)).times(Mat4.scale(1.21, .05, 1.51));
+        this.shapes.starship.draw(context, program_state, lid_transform, this.materials.test.override({color: hex_color("#000000")}));
+    }
 
     display(context, program_state) {
         // display():  Called once per frame of animation.
@@ -137,16 +234,9 @@ export class Assignment extends Scene {
             this.move_right = !this.move_right;
             this.starship_x_coord += this.starship_x_movement;
             // starship_transform = starship_transform.times(Mat4.translation(-3,0,0));
-        }
-
-        // ***** DRAW STARSHIP *****
-        let starship_transform = Mat4.identity();
-        // move starship to correct y-coord and scale to make it a rectangle
-        starship_transform = starship_transform.times(Mat4.translation(this.starship_x_coord,this.starship_y_coord,0))
-                                                .times(Mat4.scale(1.2,1,1.5));     
+        }        
         
-
-        this.shapes.starship.draw(context, program_state, starship_transform, this.materials.starship);
+        this.draw_starship(context, program_state);
     }
 }
 
