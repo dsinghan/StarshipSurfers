@@ -517,7 +517,7 @@ export class Assignment extends Scene {
         // The position of the light
             // oscilate light left to right to give illusion of time
         let x_pos = 11*Math.sin(t / 10);
-        this.light_position = vec4(x_pos, 4, -1, 1);
+        this.light_position = vec4(x_pos, 4, -5, 1);
 
     
         // The color of the light
