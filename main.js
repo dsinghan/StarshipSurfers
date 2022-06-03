@@ -54,6 +54,14 @@ export class Assignment extends Scene {
         this.materials = {
             test: new Material(new defs.Phong_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
+            obstacle: new Material(new Shadow_Textured_Phong_Shader(1),
+                {
+                    ambient: 0.9, 
+                    diffusivity: .1,
+                    specularity: .1,
+                    color: hex_color("#FFFFFF"),
+                    light_depth_texture: null
+                }),
             starship: new Material(new Shadow_Textured_Phong_Shader(1),
                 {
                     ambient: 0.9, 
@@ -295,6 +303,7 @@ export class Assignment extends Scene {
         this.materials.flag.light_depth_texture = this.light_depth_texture
         // this.floor = this.light_depth_texture
         this.materials.royce_floor.light_depth_texture = this.light_depth_texture
+        this.materials.obstacle.light_depth_texture = this.light_depth_texture
         // this.shapes.background.light_depth_texture = this.light_depth_texture
 
         this.lightDepthTextureSize = LIGHT_DEPTH_TEX_SIZE;
@@ -421,7 +430,13 @@ export class Assignment extends Scene {
         let model_transform = Mat4.identity();
 
         for (let i = 1; i < 901; i++) {
-            this.shapes.torus.draw(context, program_state, model_transform.times(Mat4.translation(this.obstacle_coord[i][0], this.obstacle_coord[i][1], this.obstacle_coord[i][2] + this.z_fall * t)), this.materials.test.override({color: yellow}));
+            let obstacle_transform = Mat4.identity();
+            obstacle_transform = obstacle_transform
+                .times(Mat4.translation(this.obstacle_coord[i][0], this.obstacle_coord[i][1]-1, this.obstacle_coord[i][2] + this.z_fall * t))
+                .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
+                .times(Mat4.scale(1, 1, 3));
+            this.shapes.axel.draw(context, program_state, obstacle_transform, shadow_pass? this.materials.obstacle.override({color: hex_color("#C0C0C0")}) : this.pure);
+            // this.shapes.torus.draw(context, program_state, model_transform.times(Mat4.translation(this.obstacle_coord[i][0], this.obstacle_coord[i][1], this.obstacle_coord[i][2] + this.z_fall * t)), this.materials.test.override({color: yellow}));
             this.obstacle_collision_coord[i] = [this.obstacle_collision_coord[i][0], this.obstacle_collision_coord[i][1], this.z_offset * i + this.z_fall * t];
             if (this.touched(this.obstacle_collision_coord[i], [this.starship_x_coord, this.starship_y_coord, this.starship_z_coord])) {
                 // put your collision function here
@@ -438,7 +453,7 @@ export class Assignment extends Scene {
     display(context, program_state) {
         // display():  Called once per frame of animation.
 
-        const t = program_state.animation_time;
+        const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
         const gl = context.context;
 
         if (!this.init_ok) {
@@ -458,40 +473,15 @@ export class Assignment extends Scene {
             program_state.set_camera(this.initial_camera_location);
         }
 
-
-        // program_state.projection_transform = Mat4.perspective(
-        //     Math.PI / 4, context.width / context.height, .1, 1000);
-
-        // const light_position = vec4(0, 5, 5, 1);
-        // // The parameters of the Light are: position, color, size
-        // program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
-
-        // this.render_scene(context, program_state, false, false, false);
-
-
         // code originaly adapted from shadow demo given in class (over email)
         // The position of the light
-        // let light_position = Mat4.identity();
-        // light_position = light_position.times(Mat4.rotation(t / 1500, 0, 0, 1));
-        // light_position = light_position.times(Mat4.translation(-10, 0, 0));
-        // this.light_position = light_position;
-        // this.light_position = Mat4.rotation(t / 1500, 0, 0, 1).times(Mat4.translation(-10, 0, 0));
-        // this.light_position = Mat4.rotation(t / 1500, 0, 0, 1).times(vec4(0, 5, 1, 1));
-        // this.light_position = Mat4.rotation(10, 0, 0, 1).times(vec4(0, 5, 1, 1));
-        this.light_position = vec4(-3, 0, -1, 1);
-        
-        
-        // Mat4.rotation(t / 1500, 0, 0, 1).times(vec4(0, 5, 1, 1));
+            // oscilate light left to right to give illusion of time
+        let x_pos = 11*Math.sin(t / 10);
+        this.light_position = vec4(x_pos, 4, -1, 1);
 
-
+    
         // The color of the light
         this.light_color = hex_color("#ffffff");
-        // this.light_color = color(
-        //     0.667 + Math.sin(t/500) / 3,
-        //     0.667 + Math.sin(t/1500) / 3,
-        //     0.667 + Math.sin(t/3500) / 3,
-        //     1
-        // );
 
         // This is a rough target of the light.
         // Although the light is point light, we need a target to set the POV of the light
@@ -499,6 +489,7 @@ export class Assignment extends Scene {
         // this.light_view_target = vec4(10, 1, 8, 1);
 
         this.light_field_of_view = 130 * Math.PI / 180; // 130 degree
+        // this.light_field_of_view = 2;
 
         program_state.lights = [new Light(this.light_position, this.light_color, 1000)];
 
@@ -528,11 +519,5 @@ export class Assignment extends Scene {
         program_state.projection_transform = Mat4.perspective(Math.PI / 4, context.width / context.height, 0.5, 500);
         this.render_scene(context, program_state, true,true, true);
 
-        // this.shapes.square_2d.draw(context, program_state,
-        //     Mat4.translation(-.99, .08, 0).times(
-        //     Mat4.scale(0.5, 0.5 * gl.canvas.width / gl.canvas.height, 1)
-        //     ),
-        //     this.depth_tex.override({texture: this.lightDepthTexture})
-        // );
     }
 }
