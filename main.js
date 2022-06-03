@@ -108,11 +108,11 @@ export class Assignment extends Scene {
                     // https://intamarket-graphics.co.za/product/t-7500-mvp-series/
                }),
 
-            royce: new Material(new Shadow_Textured_Phong_Shader(1), {
+            royce: new Material(new Textured_Phong(), {
                 color: hex_color("#ffffff"),
                 // ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
                 ambient: .3, diffusivity: 0.6, specularity: 0.4, smoothness: 64,
-                color_texture: new Texture("assets/royce.jpg"),
+                texture: new Texture("assets/royce.jpg"),
                 light_depth_texture: null
             }),
 
@@ -456,7 +456,7 @@ export class Assignment extends Scene {
                                                     .times(Mat4.translation(0, 4, -15))
                                                     .times(Mat4.scale(28, 12, 1));
         if(!this.still_alive){
-            this.shapes.background.draw(context, program_state, background_transform, this.materials.game_over);
+            this.shapes.background.draw(context, program_state, background_transform.times(Mat4.translation(0, 0.15, 0)).times(Mat4.scale(1, 0.8, 1)), this.materials.game_over);
             return;
         } 
         this.shapes.background.draw(context, program_state, background_transform, this.materials.royce);
@@ -538,8 +538,8 @@ export class Assignment extends Scene {
         // code originaly adapted from shadow demo given in class (over email)
         // The position of the light
             // oscilate light left to right to give illusion of time
-        let x_pos = 11*Math.sin(t / 10);
-        this.light_position = vec4(x_pos, 15, -10, 1);
+        let x_pos = 4*Math.sin(t / 10);
+        this.light_position = vec4(x_pos, 4, -10, 1);
 
     
         // The color of the light
@@ -553,7 +553,7 @@ export class Assignment extends Scene {
         this.light_field_of_view = 130 * Math.PI / 180; // 130 degree
         // this.light_field_of_view = 2;
 
-        program_state.lights = [new Light(this.light_position, this.light_color, 1000)];
+        program_state.lights = [new Light(this.light_position, this.light_color, 800)];
 
         // Step 1: set the perspective and camera to the POV of light
         const light_view_mat = Mat4.look_at(
