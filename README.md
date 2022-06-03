@@ -16,5 +16,5 @@ We implemented two main advanced features in our project. First, we implemented 
 1. The user must either clone this respository or download the ZIP onto their local computer and file system.
 2. The user must navigate to the new folder.
 3. Depending on their OS, the user must either run host.bat (Windows) or host.command (Mac).
-4. The user must navigate to the URL http://localhost:8000/ (the port number in the URL must match the port number specified in the command window in step 3).
+4. The user must navigate to the URL http://localhost:8001/ (the port number in the URL must match the port number specified in the command window in step 3).
 5. If all steps are followed correctly, the project should show up at this new URL, and the user can begin playing the game.
