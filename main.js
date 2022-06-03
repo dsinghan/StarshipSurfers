@@ -76,6 +76,11 @@ export class Assignment extends Scene {
                 ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
                 texture: new Texture("assets/royce.jpg")
             }),
+            game_over: new Material(new Textured_Phong(), {
+                color: hex_color("#ffffff"),
+                ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
+                texture: new Texture("assets/game_over.jpg")
+            }),
         }
 
         this.get_y_offset = (y_offset, i) => {
@@ -90,7 +95,7 @@ export class Assignment extends Scene {
             return t * fall_constant * this.rand_values[this.num_iterations % (i*mul)];
         }
 
-        this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
+        this.initialize_camera_location();
 
         this.x_offset = 0
         this.y_offset = -6
@@ -111,9 +116,17 @@ export class Assignment extends Scene {
         this.start_time;
         this.moving_left;
         this.moving_right
+        // Game logic variables
+        this.restart_game = false;
+        this.still_alive = true;
+        this.last_obstacle_coord;
         
         // set up arrays for obstacle collision and placement
         // theres one array for the actual 
+        this.initialize_obstacles();
+    }
+
+    initialize_obstacles() {
         for (let i = 1; i < 901; i++) {
             this.obstacle_coord.push([this.x_offset, this.y_offset, this.z_offset*i]);
         }
@@ -138,7 +151,11 @@ export class Assignment extends Scene {
             }
             this.obstacle_coord[i][0] = x_coord;
             this.obstacle_collision_coord[i][0] = x_coord;
-        }
+        }            
+    }
+
+    initialize_camera_location() {
+        this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
     }
 
     touched(obstacle_coord, starship_coord) {
@@ -256,8 +273,55 @@ export class Assignment extends Scene {
 
         // Variables
 
-        // Starship Movement Controls
+        // ***** DRAW GROUND *****
+        let ground_transform = Mat4.identity();
+        ground_transform = ground_transform.times(Mat4.rotation(-Math.PI*(4/7), 1, 0, 0))
+                                                    .times(Mat4.translation(0, 65, -8.5))
+                                                    .times(Mat4.scale(30, 70, 1));
 
+        this.shapes.background.draw(context, program_state, ground_transform, this.materials.royce);
+
+
+        this.draw_starship(context, program_state);
+
+        for (let i = 1; i < 901; i++) {
+            let obstacle_transform = Mat4.identity();
+            if (this.still_alive) {
+                obstacle_transform = obstacle_transform
+                    .times(Mat4.translation(this.obstacle_coord[i][0], this.obstacle_coord[i][1]-1, this.obstacle_coord[i][2] + this.z_fall * t))
+                    .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
+                    .times(Mat4.scale(1, 1, 3));
+                this.shapes.axel.draw(context, program_state, obstacle_transform, this.materials.test.override({color: hex_color("#C0C0C0")}));
+            }
+            else {
+                obstacle_transform = obstacle_transform
+                    .times(Mat4.translation(this.obstacle_coord[i][0], this.obstacle_coord[i][1]-10, this.obstacle_coord[i][2] + this.z_fall * this.last_obstacle_coord))
+                    .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
+                    .times(Mat4.scale(1, 1, 3));
+                this.shapes.axel.draw(context, program_state, obstacle_transform, this.materials.test.override({color: hex_color("#C0C0C0")}));
+            }
+            this.obstacle_collision_coord[i] = [this.obstacle_collision_coord[i][0], this.obstacle_collision_coord[i][1], this.z_offset * i + this.z_fall * t];
+            if (this.touched(this.obstacle_collision_coord[i], [this.starship_x_coord, this.starship_y_coord, this.starship_z_coord])) {
+                // put your collision function here
+                let starship_transform = Mat4.identity();
+                this.still_alive = false;
+                this.last_obstacle_coord = t;
+                // move starship to correct y-coord and scale to make it a rectangle
+                }
+        }
+        // ***** DRAW BACKGROUND *****
+        let background_transform = Mat4.identity();
+        background_transform = background_transform.times(Mat4.rotation(-Math.PI*(1/7), 1, 0, 0))
+                                                    .times(Mat4.translation(0, 4, -15))
+                                                    .times(Mat4.scale(28, 12, 1));
+        if(!this.still_alive){
+            this.shapes.background.draw(context, program_state, background_transform, this.materials.game_over);
+            return;
+        } 
+        this.shapes.background.draw(context, program_state, background_transform, this.materials.royce);
+
+
+        // Starship Movement Controls
         let smooth_move_speed = 0.25;
 
         if(this.moving_left){
@@ -305,36 +369,7 @@ export class Assignment extends Scene {
             } 
         }
         
-        this.draw_starship(context, program_state);
-
-        // ***** DRAW BACKGROUND *****
-        let background_transform = Mat4.identity();
-        background_transform = background_transform.times(Mat4.rotation(-Math.PI*(1/7), 1, 0, 0))
-                                                    .times(Mat4.translation(0, 4, -15))
-                                                    .times(Mat4.scale(28, 12, 1));
-
-        this.shapes.background.draw(context, program_state, background_transform, this.materials.royce);
-
-        // ***** DRAW GROUND *****
-        let ground_transform = Mat4.identity();
-        ground_transform = ground_transform.times(Mat4.rotation(-Math.PI*(4/7), 1, 0, 0))
-                                                    .times(Mat4.translation(0, 65, -8.5))
-                                                    .times(Mat4.scale(30, 70, 1));
-
-        this.shapes.background.draw(context, program_state, ground_transform, this.materials.royce);
 
 
-        for (let i = 1; i < 901; i++) {
-            this.shapes.torus.draw(context, program_state, model_transform.times(Mat4.translation(this.obstacle_coord[i][0], this.obstacle_coord[i][1], this.obstacle_coord[i][2] + this.z_fall * t)), this.materials.test.override({color: yellow}));
-            this.obstacle_collision_coord[i] = [this.obstacle_collision_coord[i][0], this.obstacle_collision_coord[i][1], this.z_offset * i + this.z_fall * t];
-            if (this.touched(this.obstacle_collision_coord[i], [this.starship_x_coord, this.starship_y_coord, this.starship_z_coord])) {
-                // put your collision function here
-                let starship_transform = Mat4.identity();
-                // move starship to correct y-coord and scale to make it a rectangle
-                starship_transform = starship_transform.times(Mat4.translation(this.starship_x_coord,this.starship_y_coord,0))
-                                                        .times(Mat4.scale(1.2,1,1.5));  
-                this.shapes.starship.draw(context, program_state, starship_transform.times(Mat4.translation(0, 0, -5)), this.materials.starship);
-            }
-        }
     }
 }
