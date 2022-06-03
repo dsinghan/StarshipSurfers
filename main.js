@@ -103,7 +103,16 @@ export class Assignment extends Scene {
             royce: new Material(new Textured_Phong(), {
                 color: hex_color("#ffffff"),
                 ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/royce.jpg")
+                // ambient: .3, diffusivity: 0.6, specularity: 0.4, smoothness: 64,
+                texture: new Texture("assets/royce.jpg"),
+                light_depth_texture: null
+            }),
+
+            royce_floor: new Material(new Shadow_Textured_Phong_Shader(1), {
+                color: color(1, 1, 1, 1), ambient: .3, diffusivity: 0.6, specularity: 0.4, smoothness: 64,
+                // color: hex_color("#ffffff"), ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
+                color_texture: new Texture("assets/royce.jpg"),
+                light_depth_texture: null
             }),
         }
 
@@ -284,6 +293,9 @@ export class Assignment extends Scene {
         this.materials.axel.light_depth_texture = this.light_depth_texture
         this.materials.flag_pole.light_depth_texture = this.light_depth_texture
         this.materials.flag.light_depth_texture = this.light_depth_texture
+        // this.floor = this.light_depth_texture
+        this.materials.royce_floor.light_depth_texture = this.light_depth_texture
+        // this.shapes.background.light_depth_texture = this.light_depth_texture
 
         this.lightDepthTextureSize = LIGHT_DEPTH_TEX_SIZE;
         gl.bindTexture(gl.TEXTURE_2D, this.lightDepthTexture);
@@ -396,7 +408,7 @@ export class Assignment extends Scene {
                                                     .times(Mat4.translation(0, 65, -8.5))
                                                     .times(Mat4.scale(30, 70, 1));
 
-        this.shapes.background.draw(context, program_state, ground_transform, this.materials.royce);
+        this.shapes.background.draw(context, program_state, ground_transform, this.materials.royce_floor);
 
 
         const yellow = hex_color("#fac91a");
@@ -458,7 +470,8 @@ export class Assignment extends Scene {
         // light_position = light_position.times(Mat4.translation(-10, 0, 0));
         // this.light_position = light_position;
         // this.light_position = Mat4.rotation(t / 1500, 0, 0, 1).times(Mat4.translation(-10, 0, 0));
-        this.light_position = Mat4.rotation(t / 1500, 0, 0, 1).times(vec4(3, 6, 1, 1));
+        this.light_position = Mat4.rotation(t / 1500, 0, 0, 1).times(vec4(0, 5, 1, 1));
+
         // The color of the light
         this.light_color = hex_color("#ffffff");
         // this.light_color = color(
@@ -501,11 +514,11 @@ export class Assignment extends Scene {
         program_state.projection_transform = Mat4.perspective(Math.PI / 4, context.width / context.height, 0.5, 500);
         this.render_scene(context, program_state, true,true, true);
 
-        this.shapes.square_2d.draw(context, program_state,
-            Mat4.translation(-.99, .08, 0).times(
-            Mat4.scale(0.5, 0.5 * gl.canvas.width / gl.canvas.height, 1)
-            ),
-            this.depth_tex.override({texture: this.lightDepthTexture})
-        );
+        // this.shapes.square_2d.draw(context, program_state,
+        //     Mat4.translation(-.99, .08, 0).times(
+        //     Mat4.scale(0.5, 0.5 * gl.canvas.width / gl.canvas.height, 1)
+        //     ),
+        //     this.depth_tex.override({texture: this.lightDepthTexture})
+        // );
     }
 }
