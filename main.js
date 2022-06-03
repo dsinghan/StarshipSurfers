@@ -416,9 +416,9 @@ export class Assignment extends Scene {
 
         // ***** DRAW GROUND *****
         let ground_transform = Mat4.identity();
-        ground_transform = ground_transform.times(Mat4.rotation(-Math.PI*(4/7), 1, 0, 0))
-                                                    .times(Mat4.translation(0, 65, -8.5))
-                                                    .times(Mat4.scale(30, 70, 1));
+        ground_transform = ground_transform.times(Mat4.rotation(-Math.PI*(1/2), 1, 0, 0))
+                                                    .times(Mat4.translation(0, 29.5, -8.25))
+                                                    .times(Mat4.scale(30, 35, 1));
 
         this.shapes.background.draw(context, program_state, ground_transform, shadow_pass? this.materials.royce_floor : this.pure);
 
