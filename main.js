@@ -30,9 +30,6 @@ export class Assignment extends Scene {
         this.materials = {
             test: new Material(new defs.Phong_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
-            // test2: new Material(new Gouraud_Shader(),
-            //     {ambient: .4, diffusivity: .6, color: hex_color("#992828")}),
-            // ring: new Material(new Ring_Shader()),
             starship: new Material(new Phong_Shader(),
                 {
                     ambient: 0.9, 
@@ -74,7 +71,7 @@ export class Assignment extends Scene {
                     // https://intamarket-graphics.co.za/product/t-7500-mvp-series/
                }),
 
-            texture: new Material(new Textured_Phong(), {
+            royce: new Material(new Textured_Phong(), {
                 color: hex_color("#ffffff"),
                 ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
                 texture: new Texture("assets/royce.jpg")
@@ -272,10 +269,19 @@ export class Assignment extends Scene {
         // ***** DRAW BACKGROUND *****
         let background_transform = Mat4.identity();
         background_transform = background_transform.times(Mat4.rotation(-Math.PI*(1/7), 1, 0, 0))
-                                                    .times(Mat4.translation(0, 0, -5))
-                                                    .times(Mat4.scale(22, 12, 1));
+                                                    .times(Mat4.translation(0, 4, -15))
+                                                    .times(Mat4.scale(28, 12, 1));
 
-        this.shapes.background.draw(context, program_state, background_transform, this.materials.texture);
+        this.shapes.background.draw(context, program_state, background_transform, this.materials.royce);
+
+        // ***** DRAW GROUND *****
+        let ground_transform = Mat4.identity();
+        ground_transform = ground_transform.times(Mat4.rotation(-Math.PI*(4/7), 1, 0, 0))
+                                                    .times(Mat4.translation(0, 65, -8.5))
+                                                    .times(Mat4.scale(30, 70, 1));
+
+        this.shapes.background.draw(context, program_state, ground_transform, this.materials.royce);
+
 
         for (let i = 1; i < 901; i++) {
             this.shapes.torus.draw(context, program_state, model_transform.times(Mat4.translation(this.obstacle_coord[i][0], this.obstacle_coord[i][1], this.obstacle_coord[i][2] + this.z_fall * t)), this.materials.test.override({color: yellow}));
