@@ -54,7 +54,7 @@ export class Assignment extends Scene {
         this.materials = {
             test: new Material(new defs.Phong_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
-            starship: new Material(new Phong_Shader(),
+            starship: new Material(new Shadow_Textured_Phong_Shader(1),
                 {
                     ambient: 0.9, 
                     diffusivity: .1,
@@ -63,7 +63,7 @@ export class Assignment extends Scene {
                     light_depth_texture: null
                     // texture: new Texture("assets/stars.png")
                 }),
-            wheel: new Material(new Textured_Phong(),
+            wheel: new Material(new Shadow_Textured_Phong_Shader(1),
                 {
                     ambient: .2, 
                     diffusivity: .1,
@@ -73,7 +73,7 @@ export class Assignment extends Scene {
                     light_depth_texture: null
                     // <a href="https://www.vecteezy.com/free-vector/tire-texture">Tire Texture Vectors by Vecteezy</a>
                 }),
-            axel: new Material(new Phong_Shader(),
+            axel: new Material(new Shadow_Textured_Phong_Shader(1),
                {
                     ambient: .5, 
                     diffusivity: .9,
@@ -81,7 +81,7 @@ export class Assignment extends Scene {
                     color: hex_color("#C0C0C0"),
                     light_depth_texture: null
                }),
-            flag_pole: new Material(new Phong_Shader(),
+            flag_pole: new Material(new Shadow_Textured_Phong_Shader(1),
                {
                     ambient: .5, 
                     diffusivity: .9,
@@ -89,7 +89,7 @@ export class Assignment extends Scene {
                     color: hex_color("#AAA9AD"),
                     light_depth_texture: null
                }),
-            flag: new Material(new Textured_Phong(),
+            flag: new Material(new Shadow_Textured_Phong_Shader(1),
                {
                     ambient: 1, 
                     diffusivity: .1,
@@ -220,13 +220,13 @@ export class Assignment extends Scene {
         this.key_triggered_button("Right", ["Control", "d"], () => this.move_right = () => this.starship);
     }
 
-    draw_starship(context, program_state) {
+    draw_starship(context, program_state, shadow_pass) {
         // ***** DRAW STARSHIP *****
         let starship_transform = Mat4.identity();
         // move starship to correct y-coord and scale to make it a rectangle
         starship_transform = starship_transform.times(Mat4.translation(this.starship_x_coord,this.starship_y_coord,0))
                                                 .times(Mat4.scale(1.2,1,1.5));     
-        this.shapes.starship.draw(context, program_state, starship_transform, this.materials.starship);
+        this.shapes.starship.draw(context, program_state, starship_transform, shadow_pass? this.materials.starship : this.pure);
 
         //Logic for drawing wheels
         let wheel_transform = Mat4.identity();
@@ -238,12 +238,12 @@ export class Assignment extends Scene {
         let wheel_z = 1.5*0.9;
         let wheel_scale_size = 0.65;
         
-        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(wheel_x, wheel_y, wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), this.materials.wheel);
-        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(wheel_x, wheel_y, -wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), this.materials.wheel);
-        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(0, wheel_y, wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), this.materials.wheel);
-        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(0, wheel_y, -wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), this.materials.wheel);
-        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(-wheel_x, wheel_y, wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), this.materials.wheel);
-        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(-wheel_x, wheel_y, -wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), this.materials.wheel);
+        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(wheel_x, wheel_y, wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), shadow_pass? this.materials.wheel : this.pure);
+        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(wheel_x, wheel_y, -wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), shadow_pass? this.materials.wheel : this.pure);
+        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(0, wheel_y, wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), shadow_pass? this.materials.wheel : this.pure);
+        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(0, wheel_y, -wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), shadow_pass? this.materials.wheel : this.pure);
+        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(-wheel_x, wheel_y, wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), shadow_pass? this.materials.wheel : this.pure);
+        this.shapes.starship_wheel.draw(context, program_state, wheel_transform.times(Mat4.translation(-wheel_x, wheel_y, -wheel_z)).times(Mat4.scale(wheel_scale_size, wheel_scale_size, wheel_scale_size)), shadow_pass? this.materials.wheel : this.pure);
 
 
         //Logic for drawing wheel axel
@@ -251,9 +251,9 @@ export class Assignment extends Scene {
         axel_transform = axel_transform.times(Mat4.translation(this.starship_x_coord, this.starship_y_coord-wheel_z/1.85, 0));
         axel_transform = axel_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0)); // rotate 90 degrees
         axel_transform = axel_transform.times(Mat4.scale(0.3, 0.3, 2.8)); // change shape of cylinder to resember thin flag rod
-        this.shapes.axel.draw(context, program_state, axel_transform, this.materials.axel);
-        this.shapes.axel.draw(context, program_state, axel_transform.times(Mat4.translation(wheel_x/0.3, 0, 0)), this.materials.axel);
-        this.shapes.axel.draw(context, program_state, axel_transform.times(Mat4.translation(-wheel_x/0.3, 0, 0)), this.materials.axel);
+        this.shapes.axel.draw(context, program_state, axel_transform, shadow_pass? this.materials.axel : this.pure);
+        this.shapes.axel.draw(context, program_state, axel_transform.times(Mat4.translation(wheel_x/0.3, 0, 0)), shadow_pass? this.materials.axel : this.pure);
+        this.shapes.axel.draw(context, program_state, axel_transform.times(Mat4.translation(-wheel_x/0.3, 0, 0)), shadow_pass? this.materials.axel : this.pure);
 
         // Logic for drawing flag
         let flag_transform = Mat4.identity();
@@ -261,23 +261,23 @@ export class Assignment extends Scene {
         flag_transform = flag_transform.times(Mat4.rotation(Math.PI/2, 1, 0, 0));
         flag_transform = flag_transform.times(Mat4.scale(0.05, 0.05, 4));
 
-        this.shapes.axel.draw(context, program_state, flag_transform, this.materials.flag_pole);
+        this.shapes.axel.draw(context, program_state, flag_transform, shadow_pass? this.materials.flag_pole : this.pure);
 
         let triangle_transform = Mat4.identity();
         triangle_transform = triangle_transform.times(Mat4.translation(this.starship_x_coord+1, -2, -0.45))
         triangle_transform = triangle_transform.times(Mat4.scale(0.08, 0.5, 1));
-        this.shapes.flag.draw(context, program_state, triangle_transform, this.materials.flag);
+        this.shapes.flag.draw(context, program_state, triangle_transform, shadow_pass? this.materials.flag : this.pure);
 
 
         //Logic for other decoration on starship
         let brakelights_transform = Mat4.identity();
         brakelights_transform = brakelights_transform.times(Mat4.translation(this.starship_x_coord, this.starship_y_coord+0.5, 1.5)).times(Mat4.scale(0.3, .05, 0.1))
-        this.shapes.starship.draw(context, program_state, brakelights_transform.times(Mat4.translation(-2, 0, 0)), this.materials.test.override({color: hex_color("#FF0000")}));
-        this.shapes.starship.draw(context, program_state, brakelights_transform.times(Mat4.translation(2, 0, 0)), this.materials.test.override({color: hex_color("#FF0000")}));
+        this.shapes.starship.draw(context, program_state, brakelights_transform.times(Mat4.translation(-2, 0, 0)), shadow_pass? this.materials.test.override({color: hex_color("#FF0000")}) : this.pure);
+        this.shapes.starship.draw(context, program_state, brakelights_transform.times(Mat4.translation(2, 0, 0)), shadow_pass? this.materials.test.override({color: hex_color("#FF0000")}) : this.pure);
 
         let lid_transform = Mat4.identity();
         lid_transform = lid_transform.times(Mat4.translation(this.starship_x_coord, this.starship_y_coord+0.5, 0)).times(Mat4.scale(1.21, .05, 1.51));
-        this.shapes.starship.draw(context, program_state, lid_transform, this.materials.test.override({color: hex_color("#000000")}));
+        this.shapes.starship.draw(context, program_state, lid_transform, shadow_pass? this.materials.test.override({color: hex_color("#000000")}) : this.pure);
     }
 
 
@@ -368,9 +368,13 @@ export class Assignment extends Scene {
         let light_color = this.light_color;
         program_state.draw_shadow = draw_shadow;
 
+        let light_transform = Mat4.identity();
+        // light_transform = light_transform.times(Mat4.translation(10, 0, 1)).times(Mat4.scale(.5,.5,.5));
+        light_transform = light_transform.times(Mat4.translation(light_position[0], light_position[1], light_position[2])).times(Mat4.scale(.5,.5,.5));
+
         if (draw_light_source && shadow_pass) {
             this.shapes.sphere.draw(context, program_state,
-                Mat4.translation(light_position[0], light_position[1], light_position[2]).times(Mat4.scale(.5,.5,.5)),
+                light_transform,
                 this.light_src.override({color: light_color}));
         }
 
@@ -392,7 +396,7 @@ export class Assignment extends Scene {
             // starship_transform = starship_transform.times(Mat4.translation(-3,0,0));
         }        
         
-        this.draw_starship(context, program_state);
+        this.draw_starship(context, program_state, shadow_pass);
 
         // ***** DRAW BACKGROUND *****
         let background_transform = Mat4.identity();
@@ -409,6 +413,8 @@ export class Assignment extends Scene {
                                                     .times(Mat4.scale(30, 70, 1));
 
         this.shapes.background.draw(context, program_state, ground_transform, this.materials.royce_floor);
+        this.shapes.background.draw(context, program_state, ground_transform, shadow_pass? this.materials.royce_floor : this.pure);
+
 
 
         const yellow = hex_color("#fac91a");
@@ -470,7 +476,13 @@ export class Assignment extends Scene {
         // light_position = light_position.times(Mat4.translation(-10, 0, 0));
         // this.light_position = light_position;
         // this.light_position = Mat4.rotation(t / 1500, 0, 0, 1).times(Mat4.translation(-10, 0, 0));
-        this.light_position = Mat4.rotation(t / 1500, 0, 0, 1).times(vec4(0, 5, 1, 1));
+        // this.light_position = Mat4.rotation(t / 1500, 0, 0, 1).times(vec4(0, 5, 1, 1));
+        // this.light_position = Mat4.rotation(10, 0, 0, 1).times(vec4(0, 5, 1, 1));
+        this.light_position = vec4(-3, 0, -1, 1);
+        
+        
+        // Mat4.rotation(t / 1500, 0, 0, 1).times(vec4(0, 5, 1, 1));
+
 
         // The color of the light
         this.light_color = hex_color("#ffffff");
@@ -484,6 +496,8 @@ export class Assignment extends Scene {
         // This is a rough target of the light.
         // Although the light is point light, we need a target to set the POV of the light
         this.light_view_target = vec4(0, 0, 0, 1);
+        // this.light_view_target = vec4(10, 1, 8, 1);
+
         this.light_field_of_view = 130 * Math.PI / 180; // 130 degree
 
         program_state.lights = [new Light(this.light_position, this.light_color, 1000)];
