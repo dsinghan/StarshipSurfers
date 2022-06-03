@@ -108,11 +108,11 @@ export class Assignment extends Scene {
                     // https://intamarket-graphics.co.za/product/t-7500-mvp-series/
                }),
 
-            royce: new Material(new Textured_Phong(), {
+            royce: new Material(new Shadow_Textured_Phong_Shader(1), {
                 color: hex_color("#ffffff"),
-                ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
-                // ambient: .3, diffusivity: 0.6, specularity: 0.4, smoothness: 64,
-                texture: new Texture("assets/royce.jpg"),
+                // ambient: 0.5, diffusivity: 0.1, specularity: 0.1,
+                ambient: .3, diffusivity: 0.6, specularity: 0.4, smoothness: 64,
+                color_texture: new Texture("assets/royce.jpg"),
                 light_depth_texture: null
             }),
 
@@ -539,7 +539,7 @@ export class Assignment extends Scene {
         // The position of the light
             // oscilate light left to right to give illusion of time
         let x_pos = 11*Math.sin(t / 10);
-        this.light_position = vec4(x_pos, 4, -5, 1);
+        this.light_position = vec4(x_pos, 15, -10, 1);
 
     
         // The color of the light
