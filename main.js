@@ -162,8 +162,8 @@ export class Assignment extends Scene {
 
         this.initialize_camera_location();
 
-        this.x_offset = 0
-        this.y_offset = -6
+        this.x_offset = 0;
+        this.y_offset = -5.75;
         this.z_offset = -20;
         this.z_fall = 10;
 
