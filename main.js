@@ -494,19 +494,23 @@ export class Assignment extends Scene {
             }
         }
         else {
-            if(this.move_left && this.starship_x_coord >= -this.starship_x_movement) {
+            if(this.move_left ) {
                 this.move_left = false;
-                this.moving_left = true;
-                this.start_time = t;
-                this.start_pos = this.starship_x_coord;
-                this.fin_pos = this.starship_x_coord - this.starship_x_movement;
+                if (this.starship_x_coord > -2 * this.starship_x_movement) {
+                    this.moving_left = true;
+                    this.start_time = t;
+                    this.start_pos = this.starship_x_coord;
+                    this.fin_pos = this.starship_x_coord - this.starship_x_movement;
+                }
             }
-            if(this.move_right && this.starship_x_coord <= this.starship_x_movement) {
+            if(this.move_right ) {
                 this.move_right = false;
-                this.moving_right = true;
-                this.start_time = t;
-                this.start_pos = this.starship_x_coord;
-                this.fin_pos = this.starship_x_coord + this.starship_x_movement;
+                if (this.starship_x_coord < 2 * this.starship_x_movement) {
+                    this.moving_right = true;
+                    this.start_time = t;
+                    this.start_pos = this.starship_x_coord;
+                    this.fin_pos = this.starship_x_coord + this.starship_x_movement;
+                }
             } 
         }
     }    
