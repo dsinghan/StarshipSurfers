@@ -237,7 +237,7 @@ export class Assignment extends Scene {
         let star_z = starship_coord[2];
         let threshhold = 2
         let z_threshhold_lower = 5
-        let z_threshhold_upper = 1
+        let z_threshhold_upper = 2
         if ((star_x - threshhold <= obs_x && obs_x <= star_x + threshhold) && 
             (star_y - threshhold <= obs_y && obs_y <= star_y + threshhold) && 
             (star_z - z_threshhold_upper <= obs_z && obs_z <= star_z + z_threshhold_lower)) {
